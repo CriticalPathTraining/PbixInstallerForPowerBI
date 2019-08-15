@@ -16,9 +16,6 @@ namespace PbixInstallerForPowerBI {
     // update client id to reference an application registred with Azure
     public const string ClientID = "[[YOUR_CLIENT_ID_HERE]]";
 
-    // Redirect URL needs to match reply URL in Azure registration
-    public const string RedirectUri = "https://localhost/PbixInstallerForPowerBI";
-
     // URLs for working with the Power BI REST API
     public const string AzureAuthorizationEndpoint = "https://login.microsoftonline.com/common";
     public const string PowerBiServiceResourceUri = "https://analysis.windows.net/powerbi/api";
@@ -46,22 +43,17 @@ namespace PbixInstallerForPowerBI {
 
       // create new ADAL authentication context 
       var authenticationContext =
-        new AuthenticationContext(ProgramConstants.AzureAuthorizationEndpoint);
+        new AuthenticationContext(ProgramConstants.AzureAuthorizationEndpoint);  
 
-      //use authentication context to trigger user login and then acquire access token
-      var userAuthnResult =
-        authenticationContext.AcquireTokenAsync(ProgramConstants.PowerBiServiceResourceUri,
-                                                ProgramConstants.ClientID,
-                                                new Uri(ProgramConstants.RedirectUri),
-                                                new PlatformParameters(PromptBehavior.Auto)).Result;
+      // To Enforce the TLS 1.2 Protocol
+      ServicePointManager.SecurityProtocol = ServicePointManager.SecurityProtocol | SecurityProtocolType.Tls12;
+      
+      // use authentication context to trigger user sign-in and return access token 
+      var userCreds = new UserPasswordCredential("UserName@MyTenent.onMicrosoft.com", "myEasyToCrackPassword");
 
-
-      //// use authentication context to trigger user sign-in and return access token 
-      //var userCreds = new UserPasswordCredential("UserName@MyTenent.onMicrosoft.com", "myEasyToCrackPassword");
-
-      //var userAuthnResult = authenticationContext.AcquireTokenAsync(ProgramConstants.PowerBiServiceResourceUri,
-      //                                                              ProgramConstants.ClientID,
-      //                                                              userCreds).Result;
+      var userAuthnResult = authenticationContext.AcquireTokenAsync(ProgramConstants.PowerBiServiceResourceUri,
+                                                                    ProgramConstants.ClientID,
+                                                                    userCreds).Result;
 
 
       // cache access token in AccessToken field
